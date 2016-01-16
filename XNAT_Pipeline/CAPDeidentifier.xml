@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Resource xmlns="http://nrg.wustl.edu/pipeline">
+    <name>CAPDeIdentification.sh</name>
+    <location>/opt/xnat/tools/CAPDeidentification</location>
+    <type>Executable</type>
+	<description>Perform CAP deidentification protocol</description>
+    <input>
+        <argument id="src_dir">
+            <description>The source DICOM directory (give the archive dir).</description>
+        </argument>
+        <argument id="target_dir">
+            <description>The target directory to create the anonymised images.</description>
+        </argument>
+        <argument id="new_id">
+            <description>New Patient ID.</description>
+        </argument>
+    </input>
+</Resource>
