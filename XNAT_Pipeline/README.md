@@ -3,7 +3,9 @@
 This subfolder contains two XML files needed to run CAP de-identification protocol as XNAT pipeline. You need to familiar yourself with [XNAT Server](http://www.xnat.org) and [XNAT Pipeline Engine](https://wiki.xnat.org/display/XNAT16/Pipeline+Engine).
 
 The files are:
+
 1. **CAPDeidentifier.XML**: This is a XNAT's resource XML file, which will call the `CAPDeidentifier.sh` script.
+
 2. **CAPDeidentificationXNATPipeline.xml**: This is the XNAT pipeline to run the deidentification protocol on an imaging session.
 
 ## Pipeline installation
