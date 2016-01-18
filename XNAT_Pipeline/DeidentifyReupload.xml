@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Pipeline xmlns="http://nrg.wustl.edu/pipeline" xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:fileUtils="org.nrg.imagingtools.utils.FileUtils" xsi:schemaLocation="http://nrg.wustl.edu/pipeline ..\..\schema\pipeline.xsd" >
+    <name>DeidentifyReupload</name>
+    <location>/opt/xnat/tools/pipelines</location>
+    <description>Run CAP's deidentification protocol and reupload the new data to another project.</description>
+    <documentation>
+        <authors>
+            <author>
+                <lastname>Suinesiaputra</lastname>
+                <firstname>Avan</firstname>
+            </author>
+        </authors>
+        <input-parameters>
+            <parameter>
+                <name>imageSessionID</name>
+                <values>
+                    <schemalink>xnat:imageSessionData/ID</schemalink>
+                </values>
+                <description>Image session ID</description>
+            </parameter>
+            <parameter>
+                <name>imageSessionLabel</name>
+                <values>
+                    <schemalink>xnat:imageSessionData/label</schemalink>
+                </values>
+                <description>Image session label</description>
+            </parameter>
+            <parameter>
+                <name>newPatientID</name>
+                <values>
+                    <schemalink>xnat:imageSessionData/dcmPatientId</schemalink>
+                </values>
+                <description>The new patient ID to be created. Leave empty to retain the same patient ID as the imageSessionLabel.</description>
+            </parameter>
+            <parameter>
+                <name>targetProject</name>
+                <values><csv>Deidentified</csv></values>
+                <description>Set the target project to re-upload the new deidentified data.</description>
+            </parameter>
+            <parameter>
+                <name>tmpDir</name>
+                <values>
+                    <csv>/var/tmp/</csv>
+                </values>
+                <description>A temporary directy to generate new deidentified images. Should have read/write access by the tomcat user.</description>
+            </parameter>
+        </input-parameters>
+    </documentation>
+    <outputFileNamePrefix>^concat(/Pipeline/parameters/parameter[name='logdir']/values/unique/text(),'/',/Pipeline/parameters/parameter[name="label"]/values/unique/text())^</outputFileNamePrefix>
+    <parameters>
+        <parameter>
+            <name>logdir</name>
+            <values>
+                <unique>/opt/xnat/tools/logs</unique>
+            </values>
+        </parameter>
+        <parameter>
+            <name>resolvedHost</name>
+            <values>
+                <unique>^if (boolean(/Pipeline/parameters/parameter[name='aliasHost']/values/unique)) then /Pipeline/parameters/parameter[name='aliasHost']/values/unique/text() else /Pipeline/parameters/parameter[name='host']/values/unique/text()^</unique>
+            </values>
+            <description>Use aliasHost if it exists, or host if not</description>
+        </parameter>
+        <parameter>
+            <name>archiveRootPath</name>
+            <values>
+                <unique>^fileUtils:GetArchiveDirRootPath(/Pipeline/parameters/parameter[name='resolvedHost']/values/unique/text(), /Pipeline/parameters/parameter[name='user']/values/unique/text(), /Pipeline/parameters/parameter[name='pwd']/values/unique/text(), /Pipeline/parameters/parameter[name='imageSessionID']/values/unique)^</unique>
+            </values>
+            <description>Root to the local archive path</description>
+        </parameter>
+        <parameter>
+            <name>archiveSessionPath</name>
+            <values>
+                <unique>^concat(/Pipeline/parameters/parameter[name='archiveRootPath']/values/unique/text(),'/',/Pipeline/parameters/parameter[name='imageSessionLabel']/values/unique)^</unique>
+            </values>
+            <description>Absolute path to the image session directory as the input of the deidentification process</description>
+        </parameter>
+        <parameter>
+            <name>resolvedNewPatientID</name>
+            <values>
+                <unique>^normalize-space(if (boolean(/Pipeline/parameters/parameter[name='newPatientID']/values/unique/text())) then /Pipeline/parameters/parameter[name='newPatientID']/values/unique/text() else /Pipeline/parameters/parameter[name='imageSessionLabel']/values/unique) ^</unique>
+            </values>
+            <description>Get the correct new Patient ID. Empty string from the input will result in the same ID as imageSessionLabel.</description>
+        </parameter>
+    </parameters>
+    <steps>
+        <step id="INIT_SETUP" description="Prepare the output directory. Delete any existing one.">
+            <resource name="rm" location="commandlineTools">
+                <argument id="f"/>
+                <argument id="r"/>
+                <argument id="file">
+                    <value>^concat(/Pipeline/parameters/parameter[name='tmpDir']/values/unique/text(),'/',/Pipeline/parameters/parameter[name='resolvedNewPatientID']/values/unique/text())^</value>
+                </argument>
+            </resource>
+        </step>
+        <step id="IDENTIFY" description="Perform the CAP deidentification">
+            <resource name="CAPDeidentifier" location="/opt/xnat/tools/resources">
+                <argument id="src_dir">
+                    <value>^/Pipeline/parameters/parameter[name='archiveSessionPath']/values/unique/text()^</value>
+                </argument>
+                <argument id='target_dir'>
+                    <value>^/Pipeline/parameters/parameter[name='tmpDir']/values/unique/text()^</value>
+                </argument>
+                <argument id='new_id'>
+                    <value>^/Pipeline/parameters/parameter[name='resolvedNewPatientID']/values/unique/text()^</value>
+                </argument>
+            </resource>
+        </step>
+        <step id="ZIP_DATA" description="">
+            <resource name="zip" location="commandlineTools">
+                <argument id="recursive"/>
+                <argument id="archive">
+                    <value>^concat(/Pipeline/parameters/parameter[name='tmpDir']/values/unique/text(),'/',/Pipeline/parameters/parameter[name='resolvedNewPatientID']/values/unique/text(),'.zip')^</value>
+                </argument>
+                <argument id="folder">
+                    <value>^concat(/Pipeline/parameters/parameter[name='tmpDir']/values/unique/text(),'/',/Pipeline/parameters/parameter[name='resolvedNewPatientID']/values/unique/text())^</value>
+                </argument>
+            </resource>
+        </step>
+        <step id="REMOVE_FOLDER" description="Cleaning up the output.">
+            <resource name="rm" location="commandlineTools">
+                <argument id="f"/>
+                <argument id="r"/>
+                <argument id="file">
+                    <value>^concat(/Pipeline/parameters/parameter[name='tmpDir']/values/unique/text(),'/',/Pipeline/parameters/parameter[name='resolvedNewPatientID']/values/unique/text())^</value>
+                </argument>
+            </resource>
+        </step>
+        <step id="UPLOAD_ZIP" description="Upload the deidentified zip file to XNAT">
+            <resource name="curl" location="commandlineTools">
+                <argument id="userpassword">
+                    <value>^concat(/Pipeline/parameters/parameter[name='user']/values/unique/text(), ':', /Pipeline/parameters/parameter[name='pwd']/values/unique/text())^</value>
+                </argument>
+                <argument id="options">
+                    <value>^concat(' --form image_archive=@', /Pipeline/parameters/parameter[name='tmpDir']/values/unique/text(), '/', /Pipeline/parameters/parameter[name='resolvedNewPatientID']/values/unique/text(), '.zip ', ' --form project=', /Pipeline/parameters/parameter[name='targetProject']/values/unique/text(), ' --form inbody=true --form overwrite=delete ')^</value>
+                </argument>
+                <argument id="url">
+                    <value>^concat(/Pipeline/parameters/parameter[name='resolvedHost']/values/unique/text(), 'data/services/import?format=html')^</value>
+                </argument>
+                <argument id="outfile">
+                    <value>^concat(/Pipeline/parameters/parameter[name='logdir']/values/unique/text(),'/',/Pipeline/parameters/parameter[name="label"]/values/unique/text(),"_upload.out")^</value>
+                </argument>
+            </resource>
+            <resource name="rm" location="commandlineTools">
+                <argument id="f"/>
+                <argument id="r"/>
+                <argument id="file">
+                    <value>^concat(/Pipeline/parameters/parameter[name='tmpDir']/values/unique/text(), '/', /Pipeline/parameters/parameter[name='resolvedNewPatientID']/values/unique/text(), '.zip')^</value>
+                </argument>
+            </resource>
+        </step>
+    </steps>
+</Pipeline>
