@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Resource xmlns="http://nrg.wustl.edu/pipeline">
-    <name>CAPDeIdentification.sh</name>
+    <name>CAPDeidentifier.sh</name>
     <location>/opt/xnat/tools/CAPDeidentification</location>
     <type>Executable</type>
 	<description>Perform CAP deidentification protocol</description>
