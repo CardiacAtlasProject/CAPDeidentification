@@ -14,5 +14,8 @@
         <argument id="new_id">
             <description>New Patient ID.</description>
         </argument>
+        <argument id="jar_dir">
+            <description>The directory where CapDicomDeidentifications.jar is.</description>
+        </argument>
     </input>
 </Resource>
