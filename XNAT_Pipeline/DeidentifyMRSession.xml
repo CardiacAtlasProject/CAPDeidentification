@@ -157,5 +157,31 @@
                 </argument>
             </resource>
         </step>
+        <step id="NOTIFY_USER" description="Email user to notify">
+            <resource name="Notifier" location="notifications">
+                <argument id="user">
+					<value>^/Pipeline/parameters/parameter[name='user']/values/unique/text()^</value>
+				</argument>
+                <argument id="password">
+					<value>^/Pipeline/parameters/parameter[name='pwd']/values/unique/text()^</value>
+				</argument>
+				<argument id="to">
+					<value>^/Pipeline/parameters/parameter[name='useremail']/values/unique/text()^</value>
+				</argument>
+				<argument id="from">
+					<value>^/Pipeline/parameters/parameter[name='adminemail']/values/unique/text()^</value>
+				</argument>
+				<argument id="subject">
+					<value>^concat(/Pipeline/parameters/parameter[name='xnatserver']/values/unique/text(), ' update: Deidentification complete')^</value>
+				</argument>
+				<argument id="host">
+					<value>^/Pipeline/parameters/parameter[name='mailhost']/values/unique/text()^</value>
+				</argument>
+				<argument id="body">
+					<value>^concat('Dear ', /Pipeline/parameters/parameter[name='userfullname']/values/unique/text(),', &lt;p&gt; The image session data ', /Pipeline/parameters/parameter[name='imageSessionLabel']/values/unique/text(), ' has been deidentified into ', /Pipeline/parameters/parameter[name='newPatientID']/values/unique/text(), ' and archived in ', /Pipeline/parameters/parameter[name='targetProject']/values/unique/text(), '.&lt;/p&gt;', &lt;p&gt;  Plase note that the original identifiable session is still available in the original project. You must delete them manually.&lt;/p&gt;', /Pipeline/parameters/parameter[name='xnatserver']/values/unique/text(),' Team.')^
+					</value>
+				</argument>
+            </resource>
+        </step>
     </steps>
 </Pipeline>
