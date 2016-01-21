@@ -39,9 +39,13 @@ The steps are defined in the **DeidentifyMRSession.xml** under `steps` element:
 
   This step zips the de-identified output directory into a ZIP file for re-uploading. The output directory will be deleted after ZIP.
 
-5. **UPLOAD_ZIP**
+4. **UPLOAD_ZIP**
 
   This step will re-upload the de-identified data into XNAT by using a `targetProject` and `newPatientID` parameters (see Parameters below). The ZIP file will be deleted after upload.
+
+5. **NOTIFY_USER**
+
+  This step sends an email to the user that calls this pipeline. The email contains the result from step 4. 
 
 ## Parameters in **DeidentifyMRSession.xml**
 
