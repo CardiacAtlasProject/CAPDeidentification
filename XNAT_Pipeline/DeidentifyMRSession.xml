@@ -146,7 +146,7 @@
                     <value>^concat(/Pipeline/parameters/parameter[name='resolvedHost']/values/unique/text(), 'data/services/import?format=html')^</value>
                 </argument>
                 <argument id="outfile">
-                    <value>^concat(/Pipeline/parameters/parameter[name='logdir']/values/unique/text(),'/',/Pipeline/parameters/parameter[name="label"]/values/unique/text(),"_upload.out")^</value>
+                    <value>^concat(/Pipeline/parameters/parameter[name='logdir']/values/unique/text(),'/',/Pipeline/parameters/parameter[name="label"]/values/unique/text(),"_upload.html")^</value>
                 </argument>
             </resource>
             <resource name="rm" location="commandlineTools">
@@ -172,15 +172,14 @@
 					<value>^/Pipeline/parameters/parameter[name='adminemail']/values/unique/text()^</value>
 				</argument>
 				<argument id="subject">
-					<value>^concat(/Pipeline/parameters/parameter[name='xnatserver']/values/unique/text(), ' update: Deidentification complete')^</value>
+					<value>^concat(/Pipeline/parameters/parameter[name='xnatserver']/values/unique/text(), ': Deidentification pipeline completed')^</value>
 				</argument>
 				<argument id="host">
 					<value>^/Pipeline/parameters/parameter[name='mailhost']/values/unique/text()^</value>
 				</argument>
-				<argument id="body">
-					<value>^concat('Dear ', /Pipeline/parameters/parameter[name='userfullname']/values/unique/text(),', &lt;p&gt; The image session data ', /Pipeline/parameters/parameter[name='imageSessionLabel']/values/unique/text(), ' has been deidentified into ', /Pipeline/parameters/parameter[name='newPatientID']/values/unique/text(), ' and archived in ', /Pipeline/parameters/parameter[name='targetProject']/values/unique/text(), '.&lt;/p&gt;', &lt;p&gt;  Plase note that the original identifiable session is still available in the original project. You must delete them manually.&lt;/p&gt;', /Pipeline/parameters/parameter[name='xnatserver']/values/unique/text(),' Team.')^
-					</value>
-				</argument>
+                <argument id="bodycontents">
+                    <value>^concat(/Pipeline/parameters/parameter[name='logdir']/values/unique/text(),'/',/Pipeline/parameters/parameter[name="label"]/values/unique/text(),"_upload.html")^</value>
+                </argument>
             </resource>
         </step>
     </steps>
