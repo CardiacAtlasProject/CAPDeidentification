@@ -135,4 +135,35 @@ This pipeline needs two projects. One is for upload new studies, that can be ide
 
 * Click `Pipelines` tab and add the new `DeidentifyMRSession` pipeline to the project. You can set whether to trigger it automatically or not.
 
-## Troubleshooting
+## The Protocol
+
+User protocol:
+
+1. Assume that the user responsible to perform the upload-and-deidentify task is called `USER` with email `user@email.com`.
+
+2. Set `USER` access to both projects `Upload` and `Shared` as **Member** so that he can upload data to these projects.
+
+3. User login and use project `Upload` to upload new image data.
+  > **DO NOT USE PROJECT `SHARED` FOR UPLOAD!!**
+
+4. After receiving email that the new image data has been uploaded and archived sucessfully, go to `Project:Upload`, select the Subject and MR Session.
+
+5. If the pipeline wasn't setup automatically triggered:
+
+  1. Click `Pipeline` menu item in the Actions box.
+
+  2. Select `DeidentifyMRSession` and click **submit** button.
+
+  3. You can modify `newPatientID`, but make sure that the `targetProject=Shared`.
+
+  4. Click **Submit**.
+
+6. The result of the pipeline will be emailed to `user@email.com`.
+
+7. If it is successful, then the new deidentified image data will be availabe in `Shared` project.
+
+8. Delete the original data in the `Upload` project.
+
+Admin protocol:
+
+This pipeline will re-upload new de-identified patient data and the original patient data will be deleted manually by the `USER`. XNAT never deletes data completely, so they remain in `[xnat-data]/cache/DELETED/` folder. Make sure to check these folders and remove them manually by using built-in OS function.
